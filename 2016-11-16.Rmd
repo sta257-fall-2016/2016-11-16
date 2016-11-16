@@ -1,0 +1,156 @@
+---
+title: "STA257"
+author: "Neil Montgomery | HTML is official | PDF versions good for in-class use only"
+date: "Last edited: `r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+output: 
+  ioslides_presentation: 
+    css: '../styles.css' 
+    widescreen: true 
+    transition: 0.001
+header-includes:
+- \usepackage{cancel}
+---
+\newcommand\given[1][]{\:#1\vert\:}
+\newcommand\P[1]{P{\left(#1\right)}}
+\newcommand\F[1]{F_{\tiny{#1}}}
+\newcommand\f[1]{f_{\tiny{#1}}}
+\newcommand\p[1]{p_{\tiny{#1}}}
+
+## conditional distributions and independence
+
+Suppose $X$ and $Y$ are independent so that $f(x,y) = \f{X}(x)\,\f{Y}(y)$. 
+
+Then:
+$$\begin{align*}
+\f{X|Y}(x|y) &= \frac{f(x,y)}{\f{Y}(y)}\\
+&=\frac{\f{X}(x)\,\f{Y}(y)}{\f{Y}(y)}\\
+&= \f{X}(x)
+\end{align*}$$
+I would argue: *as expected*. 
+
+# the bivariate normal distributions - a very fast introduction to an important class of joint distributions
+
+## bivariate normal - independent $N(0,1)$ case
+
+Start with $X \sim N(0,1)$ and $Y \sim N(0,1)$ with $X \perp Y$. The joint density will be:
+$$f(x,y) = \frac{1}{2\pi}\exp{\left(-\frac{1}{2}\left(x^2 + y^2\right)\right)}$$
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.align='center'}
+library(lattice)
+library(dplyr)
+library(gridExtra)
+
+marg <- 3.5
+len <- 50
+
+bn <- expand.grid(x=seq(-marg, marg, length.out = len),
+                             y=seq(-marg, marg, length.out = len)) %>% 
+  mutate(z = exp(-1/2*(x^2+y^2))/(2*pi))
+
+p1 <- wireframe(z ~ x * y, bn, zlab="f(x,y)")
+p2 <- contourplot(z ~ x * y, bn, labels=FALSE)
+grid.arrange(p1,p2,ncol=2)
+```
+
+## bivariate normal - independent general case 
+
+If we let $X \sim N(\mu_x, \sigma^2_x)$ and $Y \sim N(\mu_y, \sigma^2_y)$ with $X \perp Y$ the joint density is:
+$$\begin{align*}
+f(x,y) &= \frac{1}{\sigma_x\sigma_y2\pi}\exp{\left(-\frac{1}{2}\left[\left(\frac{x-\mu_x}{\sigma_x}\right)^2 + \left(\frac{y-\mu_y}{\sigma_y}\right)^2\right]\right)}\\
+&= \frac{1}{\sigma_x\sigma_y2\pi}\exp{\left(-\frac{1}{2}\left[a^2 + b^2\right]\right)}
+\end{align*}$$
+
+With: 
+
+$$a = \frac{x-\mu_x}{\sigma_x} \hspace{2cm} b = \frac{y-\mu_y}{\sigma_y}$$
+
+## free pictures of some joint independent normals
+
+$$\mu_x = 10\qquad\sigma^2_x=1\hspace{4cm}\mu_x=3\qquad \sigma^2_x=4\\
+\mu_y = -1\qquad\sigma^2_y=9\hspace{4cm}\mu_y=2\qquad \sigma^2_y=\frac{1}{4}$$
+
+```{r, echo=FALSE, fig.align='center'}
+bn %>% mutate(x2 = 10 + x, y2 = -1 + y*3) %>% 
+  contourplot(z ~ x2*y2, ., asp=3, , xlab="x", ylab="y", labels=FALSE, xlim=c(6, 14),cuts = 15) -> p3
+bn %>% mutate(x2 = 3 + 2*x, y2 = 2 + y/2) %>% 
+  contourplot(z ~ x2*y2, ., asp=1/4, xlab="x", ylab="y",labels=FALSE, ylim=c(0,5),cuts = 15) -> p4
+grid.arrange(p3, p4, ncol=2)
+```
+
+
+## bivariate normals - general case { .build }
+
+This is not obvious. Start with the bivariate independent case, re-jigged:
+$$\begin{align*}f(x,y)&=\frac{1}{\sigma_x\sigma_y2\pi}\exp{\left(-\frac{1}{2}\left[a^2 + b^2\right]\right)}\\
+&=\frac{1}{\sqrt{1-0^2}\sigma_x\sigma_y2\pi}\exp{\left(-\frac{1}{2}\left[a^2 -2\cdot0\cdot ab+ b^2\right]\right)}
+\end{align*}$$
+Why? Because I said so. 
+
+Now let plug in a new constant $\rho$ with $-1 < \rho < 1$ (Why? Because.) where the 0 lives to get the general case:
+
+$$\frac{1}{\sqrt{1-\rho^2}\sigma_x\sigma_y2\pi}\exp{\left(-\frac{1}{2}\left[a^2 -2\rho ab+ b^2\right]\right)}$$
+
+
+## free pictures
+
+```{r, echo=FALSE, fig.align='center'}
+library(mvtnorm)
+p5 <- contourplot(dmvnorm(bn[,1:2], sigma = matrix(c(1,0.8,0.8,1),2,2)) ~ x*y, bn,labels=FALSE,cuts = 10, main="rho=0.8", asp=1)
+p6 <- contourplot(dmvnorm(bn[,1:2], sigma = matrix(c(1,0,0,1),2,2)) ~ x*y, bn,labels=FALSE,cuts = 10, main="rho=0", asp=1)
+p7 <- contourplot(dmvnorm(bn[,1:2], sigma = matrix(c(1,-0.95,-0.95,1),2,2)) ~ x*y, bn,labels=FALSE, main="rho=-0.95", asp=1)
+p8 <- contourplot(dmvnorm(bn[,1:2], sigma = matrix(c(1,0.3,0.3,1),2,2)) ~ x*y, bn,labels=FALSE,cuts = 10, main="rho=0.3", asp=1)
+
+grid.arrange(p5, p6, p7, p8, ncol=2)
+```
+
+## facts (some as exercises)
+
+Fact: Marginals of bivariate normals have normal distribution. (Exercise: very carefully follow technique demonstrated on pp. 82-83 of the textbook.)
+
+Fact: Conditional distributions $X|Y=y$ and $Y|X=x$ also have normal distributions. (Exercise: the book gives the "answer" but seems to think it's too hard. It isn't. Use the identity $a^2-2\rho ab + b^2 = (1-\rho^2)b^2 + (a-\rho b)^2$)
+
+Fact: Any "slice" along any line $z = \alpha x + \beta y$ will also have a normal distribution (to be shown later).
+
+Fact: These facts *characterize* bivariate normal distrbutions (advanced)
+
+Opinion: Bi- and multi-variate normals are best worked with using vector and matrix notation...but that is for a different course. 
+
+# distributions of functions of multiple random variables with focus on the continuous case
+
+## stay woke { .build }
+
+Probably way more important than the DOFORV situation, but we'll focus on the "classics" and leave the fully general case to other courses.
+
+Here are the classics. Suppose $X$ and $Y$ have joint density $f(x,y)$. Consider:
+
+$$g_1(x,y) = x + y \qquad g_2(x,y) = x\,/\,y$$
+These are smooth functions $\mathbb{R}^2 \to \mathbb{R}$. 
+
+What are the distributions of:
+
+$$W_1=g_1(X,Y) = X + Y \qquad W_2=g_2(X,Y) = Y\,/\,X $$
+Technique: the cdf of the $W_i$ is an integral of $f(x,y)$ over a certain region.
+
+## the classic density formulae: $W_1 = X + Y$
+
+$$\begin{align*}
+\f{W_1}(w) &= \int\limits_{-\infty}^\infty f(x, w-x)\,dx\\
+&= \int\limits_{-\infty}^\infty \f{X}(x)\f{Y}(w-x)\,dx \quad \left(\text{when } X\perp Y\right)
+\end{align*}$$
+Proof:...
+
+Example: $X \sim N(0,1)$ and $Y \sim N(0,1)$ with $X \perp Y$.
+
+Example: $X \sim\text{Unif}[0,1]$ and $Y \sim\text{Unif}[0,1]$ with $X\perp Y$.
+
+## the classic density formulae: $W_2 = Y\,/\,X$
+
+$$\begin{align*}
+\f{W_2}(w) &= \int\limits_{-\infty}^\infty f(x, wx)|x|\,dx\\
+&= \int\limits_{-\infty}^\infty \f{X}(x)\f{Y}(wx)|x|\,dx \quad \left(\text{when } X\perp Y\right)
+\end{align*}$$
+
+Proof...
+
+**Mandatory** exercise (done in book as example): $X \sim N(0,1)$ and $Y \sim N(0,1)$ with $X \perp Y$. This is a classic. We say $W_2$ has a Cauchy distributions.
+
+Example: $X \sim \text{Exp}(\lambda)$ and $Y \sim \text{Exp}(\lambda)$ with $X \perp Y$.
