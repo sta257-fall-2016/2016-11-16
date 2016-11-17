@@ -122,7 +122,7 @@ Probably way more important than the DOFORV situation, but we'll focus on the "c
 
 Here are the classics. Suppose $X$ and $Y$ have joint density $f(x,y)$. Consider:
 
-$$g_1(x,y) = x + y \qquad g_2(x,y) = x\,/\,y$$
+$$g_1(x,y) = x + y \qquad g_2(x,y) = y\,/\,x$$
 These are smooth functions $\mathbb{R}^2 \to \mathbb{R}$. 
 
 What are the distributions of:
@@ -142,15 +142,5 @@ Example: $X \sim N(0,1)$ and $Y \sim N(0,1)$ with $X \perp Y$.
 
 Example: $X \sim\text{Unif}[0,1]$ and $Y \sim\text{Unif}[0,1]$ with $X\perp Y$.
 
-## the classic density formulae: $W_2 = Y\,/\,X$
+Exercise (textbook example): $X \sim \text{Exp}(\lambda)$ and $Y \sim \text{Exp}(\lambda)$ with $X \perp Y$
 
-$$\begin{align*}
-\f{W_2}(w) &= \int\limits_{-\infty}^\infty f(x, wx)|x|\,dx\\
-&= \int\limits_{-\infty}^\infty \f{X}(x)\f{Y}(wx)|x|\,dx \quad \left(\text{when } X\perp Y\right)
-\end{align*}$$
-
-Proof...
-
-**Mandatory** exercise (done in book as example): $X \sim N(0,1)$ and $Y \sim N(0,1)$ with $X \perp Y$. This is a classic. We say $W_2$ has a Cauchy distributions.
-
-Example: $X \sim \text{Exp}(\lambda)$ and $Y \sim \text{Exp}(\lambda)$ with $X \perp Y$.
